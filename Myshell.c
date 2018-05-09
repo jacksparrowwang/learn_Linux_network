@@ -28,6 +28,7 @@ void Do_Execute(char* argv[])
     else if (id == 0)
     {
         // child
+        // 采用自动搜索路径和参数数组
         execvp(argv[0], argv);
         perror(argv[0]);
         printf("替换错误 \n");
