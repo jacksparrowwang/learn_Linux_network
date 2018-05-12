@@ -16,11 +16,45 @@ using namespace std;
 //    字符串在栈上还是在堆上。
 
 // 1）是当字符后面的空间有充裕的空间来存放扩容的字符
-void Repeat1(char* str);
+void Repeat1(char* str)
+{
+    size_t count = 0;
+    size_t len = 0;
+    char* cur = str;
+    while (*cur != '\0')
+    {
+        // 替换成%20
+        if (*cur == ' ' || *cur == '#')
+        {
+            ++count;
+        }
+        ++len;
+        ++cur;
+    }
+    size_t addlen = len+count*2;
+    cur = str;
+    for (int i = (int)len; i >= 0; --i)
+    {
+        if (*(cur+i) == ' ' || *(cur+i) == '#')
+        {
+            *(cur+addlen) = '0';
+            --addlen;
+            *(cur+addlen) = '2';
+            --addlen;
+            *(cur+addlen) = '%';
+        }
+        else
+        {
+            *(cur+addlen) = *(cur+i);
+        }
+        --addlen;
+    }
+}
 
 // 将字符串中的“ ”，“#”替换成%加对应的十六位ASCII值
 // 2）当字符串后面没有足够的空间，需要扩容，那么原有的
 //    字符串在栈上还是在堆上。
+// 引用传值注意
 void Repeat2(char*& str)
 {
     // count 用来计算字符串中‘ ’，‘#’的个数
@@ -71,8 +105,16 @@ void TestRepeat2()
     cout<<p<<endl;
 }
 
+void TestRepeat1()
+{
+    char arr[] = "ni hao a # en";
+    Repeat1(arr);
+    cout<<arr<<endl;
+}
+
 int main()
 {
     TestRepeat2();
+    TestRepeat1();
     return 0;
 }
