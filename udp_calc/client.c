@@ -30,10 +30,14 @@ int main(int argc, char* argv[])
     Response resp;
     while (1)
     {
-        printf("输入第一个数字\n");
-        scanf("%d", &req.a);
-        printf("输入第二个数字\n");
-        scanf("%d", &req.b);
+        printf("输入要计算的数，用空格隔开，如 1 + 2<Enter>\n");
+        scanf("%d %c %d", &req.a,&req.s,&req.b);
+        if (req.s == '/' && req.b == 0)
+        {
+            perror("除0非法\n");
+            continue;
+        }
+
         req.a = htonl(req.a);
         req.b = htonl(req.b);
         sendto(sock, &req, sizeof(req), 0, (struct sockaddr*)&server, sizeof(server));

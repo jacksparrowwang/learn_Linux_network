@@ -63,11 +63,22 @@ int main(int argc, char* argv[])
         req.a = ntohl(req.a);
         req.b = ntohl(req.b);
 
-        printf("client %s:%d say # a = %d, b = %d\n", \
-               inet_ntoa(client.sin_addr), ntohs(client.sin_port), req.a, req.b);
+        printf("client %s:%d say # %d%c%d\n", \
+               inet_ntoa(client.sin_addr), ntohs(client.sin_port), req.a,req.s, req.b);
 
         // 进行计算
-        resp.sum = req.a + req.b;
+        switch(req.s)
+        {
+            case '+':resp.sum = req.a + req.b;
+                     break;
+            case '-':resp.sum = req.a - req.b;
+                     break;
+            case '*':resp.sum = req.a * req.b;
+                     break;
+            case '/':resp.sum = req.a / req.b;
+                     break;
+            default:;
+        }
 
         printf("server sun = %d\n", resp.sum);
         // 主机序转换成网路序，注意是long
