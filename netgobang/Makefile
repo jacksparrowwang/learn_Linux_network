@@ -3,10 +3,10 @@
 all:server client
 
 server:gobang_server.c
-	g++ -o $@ $^ -lpthread -g
+	g++ -o $@ $^ -lpthread
 
 client:gobang_client.c
-	g++ -o $@ $^ -g
+	g++ -o $@ $^
 
 .PHONY:clean
 

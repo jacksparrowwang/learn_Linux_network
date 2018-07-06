@@ -101,12 +101,12 @@ void CreateWorker(int sock)
             return;
         }
         arr[i] = accept_sock;
-        printf("%d %d\n",i, accept_sock);
+        /* printf("%d %d\n",i, accept_sock); */
         write(accept_sock, &i, sizeof(int));
         ++i;
         if (i == 2)
         {
-            printf("xiancheng\n");
+            /* printf("xiancheng\n"); */
             pthread_t th1, th2;
             pthread_create(&th1, NULL, Fighting1, arr);
             pthread_create(&th2, NULL, Fighting2, arr);

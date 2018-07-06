@@ -137,7 +137,7 @@ int DecideWinLoss(Coordinate coor, char c)
     if (count >= 5)
     {
         // 0代表成功
-        printf("shag\n");
+        /* printf("shag\n"); */
         return 0;
     }
 
@@ -157,12 +157,12 @@ int DecideWinLoss(Coordinate coor, char c)
        ++coor.x;
        --coor.y;
        ++count;
-       printf("1\n");
+       /* printf("1\n"); */
     }
     if (count >= 5)
     {
 
-        printf("上you\n");
+        /* printf("上you\n"); */
         return 0;
     }
 
@@ -181,7 +181,7 @@ int DecideWinLoss(Coordinate coor, char c)
     }
     if (count >= 5)
     {
-        printf("you\n");
+        /* printf("you\n"); */
         return 0;
     }
 
@@ -342,7 +342,7 @@ int main(int argc, char* argv[])
 
     int i = 0;
     read(sock, &i, sizeof(int));
-    printf("%d", i);
+    /* printf("%d", i); */
     if (i == 0)
     {
         InitArr();
