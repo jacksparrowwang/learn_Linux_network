@@ -1,5 +1,5 @@
-# learn_git and study Linux
-study remote git
+# learn_git and study Linux✊
+study remote git💪
 上传了在linux系统编程中，一些相关的代码
 1) 有进程的调度，采用优先级调度算法
 2) 有静态库与动态库
