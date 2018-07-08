@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string.h>
-#include <stdlib.h>
-#include "gobang.h"
+#include "gobang_client.h"
 
 #define ROW 15
 #define COL 15

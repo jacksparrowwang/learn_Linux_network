@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <assert.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <pthread.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "gobang.h"
+#include "gobang_server.h"
 
 int InitSocket(char *ip, int port)
 {
@@ -44,7 +35,6 @@ void *Fighting1(void* arg)
             perror("read");
             return NULL; 
         }
-        /* pthread_cond_wait(&cond, &mutex); */
 
         if (rd == 0)
         {
@@ -55,7 +45,6 @@ void *Fighting1(void* arg)
 
 
         write(sock2, &requese, sizeof(requese));
-        /* pthread_cond_signal(&_cond); */
     }
 }
 
@@ -73,7 +62,6 @@ void *Fighting2(void* arg)
             return NULL; 
         }
 
-        /* pthread_cond_signal(&cond); */
 
         if (rd == 0)
         {
@@ -83,7 +71,6 @@ void *Fighting2(void* arg)
         }
 
         write(sock1, &requese, sizeof(requese));
-        /* pthread_cond_wait(&_cond, &mutex); */
     }
 }
 
@@ -135,9 +122,6 @@ int main(int argc, char* argv[])
         return 2;
     }
 
-    /* pthread_mutex_init(&mutex, NULL); */
-    /* pthread_cond_init(&cond, NULL); */
-    /* pthread_cond_init(&_cond, NULL); */
 
     CreateWorker(sock);
     return 0;
