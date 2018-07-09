@@ -9,4 +9,8 @@ study remote git💪
 6) 共享内存
 7) systemV版本的信号量
 8) 线程相关代码
+9) TCP/UDP 编程
+10) TCP 多进程，多线程
+11) http 协议的认识
+12) 网络版对战五子棋??
 
