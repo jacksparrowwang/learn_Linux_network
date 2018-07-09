@@ -88,7 +88,12 @@ void CreateWorker(int sock)
             return;
         }
         arr[i] = accept_sock;
-        /* printf("%d %d\n",i, accept_sock); */
+        
+        // 在数据库中插入链接的IP和端口号
+        char* buf = inet_ntoa(client.sin_addr);
+        int port = ntohs(client.sin_port);
+        MYSQLInsert(buf, port);
+
         write(accept_sock, &i, sizeof(int));
         ++i;
         if (i == 2)
