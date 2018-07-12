@@ -50,13 +50,14 @@ void Chessboard()
 }
 
 // 游戏菜单
-void menu()
+int menu()
 {
     while (1)
     {
-        printf("**********************\n");
-        printf("   1 开始    0 退出   \n");
-        printf("**********************\n");
+        printf("**************************\n");
+        printf("  1 人机对战  2 联机对战  \n");  
+        printf("          0 退出          \n");  
+        printf("**************************\n");
         char buf[512];
         ssize_t rd = read(0, &buf, sizeof(buf)-1);
         if (rd < 0)
@@ -72,10 +73,13 @@ void menu()
             printf("输入错误\n");
             continue;
         }
-        if (buf[0] == '1')
+        if (buf[0] == '2')
         {
-            Chessboard();
-            break;
+            return 2;
+        }
+        else if (buf[0] == '1')
+        {
+            return 1;
         }
         else if (buf[0] == '0')
         {
@@ -87,6 +91,7 @@ void menu()
             printf("输入错误\n");
         }
     }
+    return 0;
 }
 
 // 输入合法判断
@@ -131,7 +136,6 @@ int DecideWinLoss(Coordinate coor, char c)
     if (count >= 5)
     {
         // 0代表成功
-        /* printf("shag\n"); */
         return 0;
     }
 
@@ -160,6 +164,7 @@ int DecideWinLoss(Coordinate coor, char c)
         return 0;
     }
 
+    // 左右
     count = 0;
     coor.x = _coor.x;
     coor.y = _coor.y;
@@ -179,6 +184,7 @@ int DecideWinLoss(Coordinate coor, char c)
         return 0;
     }
 
+    // 右下
     count = 0;
     coor.x = _coor.x;
     coor.y = _coor.y;
@@ -308,6 +314,69 @@ void SecondTalk(int sock)
         }
     }
 }
+
+// 建立连接
+int Connect(char* ip, char* port)
+{
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0)
+    {
+        perror("socket");
+        return 2;
+    }
+
+    // 建立连接
+    struct sockaddr_in server;
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr(ip);
+    server.sin_port = htons(atoi(port));
+    int n = connect(sock, (struct sockaddr*)&server, sizeof(server));
+    if(n < 0)
+    {
+        perror("connect");
+        return 3;
+    }
+    return sock;
+}
+
+// 人机对战
+void PeopleFightMachine()
+{
+    while (1)
+    {
+        Chessboard();
+        printf("请落子~\n");
+        // 判断合法输入
+        Coordinate coor = InputToDecide();
+        
+        // 下棋子
+        arr[coor.x][coor.y] = '$';
+        Chessboard();
+        // 判断输赢
+        int decide = DecideWinLoss(coor, arr[coor.x][coor.y]);
+        if (decide == 0)
+        {
+            printf("恭喜你~ 击败对手~\n");
+            return;
+        }
+
+        // 电脑下
+        // 电脑分析，要下位置
+        //
+        
+        // 下棋子
+        arr[coor.x][coor.y] = '@';
+        Chessboard();
+
+        decide = DecideWinLoss(coor, arr[coor.x][coor.y]);
+        if (decide == 0)
+        {
+            printf("很遗憾~ 你输了~\n");
+            return;
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
     if (argc != 3)
@@ -316,37 +385,42 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0)
+    while (1)
     {
-        perror("socket");
-        return 2;
+        int me = menu(); // 游戏开始
+        if (me == 1)
+        {
+            // 人机对战
+            PeopleFightMachine();
+        }
+        else if (me == 2)
+        {
+            // 跳出去说明是想网络对战
+            break;
+        }
     }
 
-    struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = inet_addr(argv[1]);
-    server.sin_port = htons(atoi(argv[2]));
-    int n = connect(sock, (struct sockaddr*)&server, sizeof(server));
-    if(n < 0)
-    {
-        perror("connect");
-        return 3;
-    }
+    // 网络对战,模块
 
+    // 建立连接
+    int sock = Connect(argv[1], argv[2]);
+
+    // 用来接收服务器发送的ID 用来判断是黑方还是白方
     int i = 0;
     read(sock, &i, sizeof(int));
     /* printf("%d", i); */
     if (i == 0)
     {
+        // 黑方棋手
         InitArr();
-        menu(); // 游戏开始
+        Chessboard();
         FirstTalk(sock);
     }
     else if (i == 1)
     {
+        // 白方棋手
         InitArr();
-        menu();
+        Chessboard();
         SecondTalk(sock);
     }
     else
