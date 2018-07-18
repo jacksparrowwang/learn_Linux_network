@@ -5,6 +5,7 @@
 
 int arr[ROW][COL];
 
+// 初始化棋盘
 void InitArr()
 {
     int i = 0;
@@ -339,6 +340,10 @@ int Connect(char* ip, char* port)
     return sock;
 }
 
+//////////////////////////
+//注释为上右注释，其它情况路基相同
+//////////////////////////
+//进行下棋位置锁定
 // 判断上下方向是否可以下棋
 Coordinate UpDown(Coordinate coor)
 {
@@ -433,30 +438,38 @@ Coordinate RightDown(Coordinate coor)
 {
     int x = coor.x;
     int y = coor.y;
+    // 先去判断左上进行判断
     while (x >= 0 && y >= 0 && arr[x][y] == '$')
     {
         --x;
         --y;
     }
+    // 看左上的最后一个是不是‘ ’
     if (x >= 0 && y >= 0 && arr[x][y] == ' ')
     {
         coor.x = x;
         coor.y = y;
         return coor;
     }
+    // 这里就是左上位置自己已经下了，或者到了边界
     if (x < 0 || y < 0 || arr[x][y] == '@')
     {
+        // 回到对象下棋的位置
         x = coor.x;
         y = coor.y;
+        // 进行右下方向的判断
         while (x < ROW && y < COL && arr[x][y] == '$')
         {
             ++x;
             ++y;
         }
+        // 因为在最开始寻找最长路的时候，已经判断了两端都被堵死的情况，所以现在一定会有一个位置
         coor.x = x;
         coor.y = y;
         return coor;
     }
+    // 就相当与异常
+    // 如果没有进入其中的判断语句返回原来的左边，在函数入口进行判断。
     return coor;
 }
 // 第一次生成坐标
@@ -469,26 +482,32 @@ Coordinate AroundHave(Coordinate coor, char c)
     _coor.y = coor.y;
     int count[4] = {0};
     // 上下方向
+    // 先走到最上
     while (coor.x >= 0 && arr[coor.x][coor.y] == c)
     {
         --coor.x;
     }
+    // 判断是不是最上的下一个是对方棋子，为后面的下棋排除一种两端都堵死的情况
     int fg0 = 0;
     if (coor.x < 0 || arr[coor.x][coor.y] == '@')
     {
         fg0 = 1;
     }
+    // 返回最上位置
     ++coor.x;
+    // 计算上下这条路中的对方棋子数
     while (coor.x < ROW && arr[coor.x][coor.y] == c)
     {
         ++coor.x;
-        ++count[0];
+        ++count[0];// 记录在数组中
     }
+    // 如果上下对方的棋子已经被我们堵死，这时候就不用管这种情况了
     if ((coor.x ==  ROW || arr[coor.x][coor.y] == '@') && fg0 == 1) //判断这是为了解决这个路径上的棋子已经被堵死
     {
         count[0] = 0;
     }
 
+    /////// 按照上下逻辑写出来右上、右左、右下
     // 上右方向
     coor.x = _coor.x;
     coor.y = _coor.y;
@@ -588,6 +607,7 @@ Coordinate AroundHave(Coordinate coor, char c)
     // 进行分支判断, 需要在那条路上进行下棋
     if (count_num == 0)
     {
+        // 上下路
         Coordinate ud = UpDown(_coor);// 来处理各各路上的在那边下棋;
         if (ud.x == _coor.x && ud.y == _coor.y)
         {
@@ -595,11 +615,10 @@ Coordinate AroundHave(Coordinate coor, char c)
             return coor;
         }
         // 这是处理当下的棋子为第0行的时候，棋子要下在下方
-        printf("返回的坐标%d %d", ud.x, ud.y);
+        // 防止数组越界
         if (ud.x < 0)
         {
             ++ud.x;
-        printf("返回的坐标%d %d", ud.x, ud.y);
             while (arr[ud.x][ud.y] == '$')
             {
                 ++ud.x;
@@ -611,6 +630,7 @@ Coordinate AroundHave(Coordinate coor, char c)
     }
     else if (count_num == 1)
     {
+        // 上右和下左进行判断
         Coordinate ur = UpRight(_coor);
         if (ur.x == _coor.x && ur.y == _coor.y)
         {
@@ -621,6 +641,7 @@ Coordinate AroundHave(Coordinate coor, char c)
     }
     else if (count_num == 2)
     {
+        // 左右 判断
         Coordinate lr = LeftRight(_coor);
         if (lr.x == _coor.x && lr.y == _coor.y)
         {
@@ -631,6 +652,7 @@ Coordinate AroundHave(Coordinate coor, char c)
     }
     else
     {
+        // 右下和左上判断
         Coordinate rd = RightDown(_coor);
         if (rd.x == _coor.x && rd.y == _coor.y)
         {
@@ -640,6 +662,8 @@ Coordinate AroundHave(Coordinate coor, char c)
         return rd;
     }
 
+    // 坐标生成出错，自定义一个数字，回返后判断是自定义数字
+    // 则返回错误信息
     Coordinate tmp;
     tmp.x = 100;
     tmp.y = 100;
@@ -656,6 +680,7 @@ Coordinate ProductPos(Coordinate coor)
 // 人机对战
 void PeopleFightMachine()
 {
+    // 初始化棋盘
     InitArr();
     while (1)
     {
@@ -698,6 +723,7 @@ void PeopleFightMachine()
     }
 }
 
+// 要输入./client IP port 命令行参数
 int main(int argc, char* argv[])
 {
     if (argc != 3)
@@ -706,22 +732,28 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    ///////////////////////////////////
+    // 进行人机对战
+    ///////////////////////////////////
     while (1)
     {
+        // 菜单
         int me = menu(); // 游戏开始
         if (me == 1)
         {
             // 人机对战
             PeopleFightMachine();
         }
-        else if (me == 2)
+        else if (me == 2) // 选择2 说明要进行网络对战
         {
             // 跳出去说明是想网络对战
             break;
         }
     }
 
+    ///////////////////////////////////
     // 网络对战,模块
+    ///////////////////////////////////
 
     // 建立连接
     int sock = Connect(argv[1], argv[2]);
