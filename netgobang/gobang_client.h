@@ -14,7 +14,7 @@ typedef struct Coordinate
 }Coordinate;
 
 // 游戏菜单
-void menu();
+int menu();
 
 // 初始化矩阵
 void InitArr();
@@ -34,4 +34,6 @@ void FirstTalk(int sock);
 // 后建立的
 void SecondTalk(int sock);
 
+// 建立连接
+int Connect(char* ip, char* port);
 

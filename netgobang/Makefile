@@ -1,21 +1,18 @@
 
 ROOT=$(shell pwd)
-INCLUDE=-I$(ROOT)/include
-LIB=-L$(ROOT)/lib
+INCLUDE=-I$(ROOT)/include/
+LIB=-L$(ROOT)/lib/
 LIB_NAME=-lmysqlclient
 
 .PHONY:all
 
-all:server client insert select
+all:server client 
 
-insert:insert.c
-	gcc -o $@ $^ $(INCLUDE) $(LIB) $(LIB_NAME)
+# insert:db.c
+# 	gcc -o $@ $^ $(LIB)  $(LIB_NAME) $(INCLUDE)
 
-select:select.c
-	gcc -o $@ $^
-
-server:gobang_server.c
-	gcc -o $@ $^ -lpthread
+server:gobang_server.c db.c
+	gcc -o $@ $^ -lpthread $(LIB)  $(LIB_NAME) $(INCLUDE)
 
 client:gobang_client.c
 	gcc -o $@ $^
