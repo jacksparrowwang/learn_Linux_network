@@ -339,9 +339,324 @@ int Connect(char* ip, char* port)
     return sock;
 }
 
+// 判断上下方向是否可以下棋
+Coordinate UpDown(Coordinate coor)
+{
+    int x = coor.x;
+    int y = coor.y;
+    while (x >= 0 && arr[x][y] == '$')
+    {
+        --x;
+    }
+    if (x >= 0 && arr[x][y] == ' ')
+    {
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    if (x < 0 || arr[x][y] == '@')
+    {
+        x = coor.x;
+        y = coor.y;
+        while (x < ROW && arr[x][y] == '$')
+        {
+            ++x;
+        }
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    return coor;
+}
+
+Coordinate UpRight(Coordinate coor)
+{
+    int x = coor.x;
+    int y = coor.y;
+    while (x >= 0 && y < COL && arr[x][y] == '$')
+    {
+        --x;
+        ++y;
+    }
+    if (x >= 0 && y < COL && arr[x][y] == ' ')
+    {
+       coor.x = x;
+       coor.y = y;
+       return coor;
+    }
+    if (x < 0 || y == COL || arr[x][y] == '@')
+    {
+        x = coor.x;
+        y = coor.y;
+        while (x < ROW && y >= 0 && arr[x][y] == '$')
+        {
+            ++x;
+            --y;
+        }
+        coor.x = x;
+        coor.y = y;
+    }
+    // 如果出错返回原来的位置
+    return coor;
+}
+
+Coordinate LeftRight(Coordinate coor)
+{
+    int x = coor.x;
+    int y = coor.y;
+    while (y >= 0 && arr[x][y] == '$')
+    {
+        --y;
+    }
+    if (y >= 0 && arr[x][y] == ' ')
+    {
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    if (y < 0 || arr[x][y] == '@')
+    {
+        x = coor.x;
+        y = coor.y;
+        while (y < COL && arr[x][y] == '$')
+        {
+            ++y;
+        }
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    return coor;
+}
+
+Coordinate RightDown(Coordinate coor)
+{
+    int x = coor.x;
+    int y = coor.y;
+    while (x >= 0 && y >= 0 && arr[x][y] == '$')
+    {
+        --x;
+        --y;
+    }
+    if (x >= 0 && y >= 0 && arr[x][y] == ' ')
+    {
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    if (x < 0 || y < 0 || arr[x][y] == '@')
+    {
+        x = coor.x;
+        y = coor.y;
+        while (x < ROW && y < COL && arr[x][y] == '$')
+        {
+            ++x;
+            ++y;
+        }
+        coor.x = x;
+        coor.y = y;
+        return coor;
+    }
+    return coor;
+}
+// 第一次生成坐标
+// 通过走一圈来比较出那条路线上的棋子最多
+// c 是 $
+Coordinate AroundHave(Coordinate coor, char c)
+{
+    Coordinate _coor;
+    _coor.x = coor.x;
+    _coor.y = coor.y;
+    int count[4] = {0};
+    // 上下方向
+    while (coor.x >= 0 && arr[coor.x][coor.y] == c)
+    {
+        --coor.x;
+    }
+    int fg0 = 0;
+    if (coor.x < 0 || arr[coor.x][coor.y] == '@')
+    {
+        fg0 = 1;
+    }
+    ++coor.x;
+    while (coor.x < ROW && arr[coor.x][coor.y] == c)
+    {
+        ++coor.x;
+        ++count[0];
+    }
+    if ((coor.x ==  ROW || arr[coor.x][coor.y] == '@') && fg0 == 1) //判断这是为了解决这个路径上的棋子已经被堵死
+    {
+        count[0] = 0;
+    }
+
+    // 上右方向
+    coor.x = _coor.x;
+    coor.y = _coor.y;
+    while (coor.x >= 0 && coor.y < COL && arr[coor.x][coor.y] == c)
+    {
+        --coor.x;
+        ++coor.y;
+    }
+    int fg1 = 0;
+    if (coor.x == 0 || coor.y == COL || arr[coor.x][coor.y] == '@')
+    {
+        fg1 = 1;
+    }
+    ++coor.x;
+    --coor.y;
+    while (coor.x < ROW && coor.y >= 0 && arr[coor.x][coor.y] == c)
+    {
+       ++coor.x;
+       --coor.y;
+       ++count[1];
+    }
+    if ((coor.x == ROW || coor.y == 0 || arr[coor.x][coor.y] == '@') && fg1 == 1)
+    {
+        count[1] = 0;
+    }
+
+    // 左右
+    coor.x = _coor.x;
+    coor.y = _coor.y;
+    while (coor.y < COL && arr[coor.x][coor.y] == c)
+    {
+        ++coor.y;
+    }
+    int fg2 = 0;
+    if (coor.y == COL || arr[coor.x][coor.y] == '@')
+    {
+        fg2 = 1;
+    }
+    --coor.y;
+    while (coor.y >= 0 && arr[coor.x][coor.y] == c)
+    {
+        --coor.y;
+        ++count[2];
+    }
+    if ((coor.y == 0 || arr[coor.x][coor.y] == '@') && fg2 == 1)
+    {
+        count[2] = 0;
+    }
+
+    // 右下
+    coor.x = _coor.x;
+    coor.y = _coor.y;
+    while (coor.y < COL && coor.x < ROW && arr[coor.x][coor.y] == c)
+    {
+        ++coor.x;
+        ++coor.y;
+    }
+    int fg3 = 0;
+    if (coor.y == COL || coor.x == ROW || arr[coor.x][coor.y] == '@')
+    {
+        fg3 = 1;
+    }
+    --coor.x;
+    --coor.y;
+    while (coor.x >= 0 && coor.y >= 0 && arr[coor.x][coor.y] == c)
+    {
+        --coor.x;
+        --coor.y;
+        ++count[3];
+    }
+    if ((coor.x == 0 || coor.y == 0 || arr[coor.x][coor.y] == '@') && fg3 == 1)
+    {
+        count[3] = 0;
+    }
+
+    // 用来判断哪个路径上的棋子多
+    int count_num = 0;
+    int i = 0;
+    for (; i < 4; ++i)
+    {
+        int j = 0;
+        for (; j < 4; ++j) 
+        {
+            if (count[i] < count[j])
+            {
+                break;
+            }
+        }
+        if (j == 4)
+        {
+            /* printf("来看比较是那个路上进行下棋%d", i); */
+            count_num = i;
+            break;
+        }
+    }
+    
+    // 进行分支判断, 需要在那条路上进行下棋
+    if (count_num == 0)
+    {
+        Coordinate ud = UpDown(_coor);// 来处理各各路上的在那边下棋;
+        if (ud.x == _coor.x && ud.y == _coor.y)
+        {
+            perror("UpDown error\n");
+            return coor;
+        }
+        // 这是处理当下的棋子为第0行的时候，棋子要下在下方
+        printf("返回的坐标%d %d", ud.x, ud.y);
+        if (ud.x < 0)
+        {
+            ++ud.x;
+        printf("返回的坐标%d %d", ud.x, ud.y);
+            while (arr[ud.x][ud.y] == '$')
+            {
+                ++ud.x;
+            }
+            return ud;
+        }
+        return ud;
+
+    }
+    else if (count_num == 1)
+    {
+        Coordinate ur = UpRight(_coor);
+        if (ur.x == _coor.x && ur.y == _coor.y)
+        {
+            perror("UpRight error\n");
+            return coor;
+        }
+        return ur;
+    }
+    else if (count_num == 2)
+    {
+        Coordinate lr = LeftRight(_coor);
+        if (lr.x == _coor.x && lr.y == _coor.y)
+        {
+            perror("LeftRight error\n");
+            return coor;
+        }
+        return lr;
+    }
+    else
+    {
+        Coordinate rd = RightDown(_coor);
+        if (rd.x == _coor.x && rd.y == _coor.y)
+        {
+            perror("RightDown error\n");
+            return coor;
+        }
+        return rd;
+    }
+
+    Coordinate tmp;
+    tmp.x = 100;
+    tmp.y = 100;
+    return tmp;
+}
+
+
+// 这里预留接口，为后续加入更复杂的程序，进行更有难度的计算坐标
+Coordinate ProductPos(Coordinate coor)
+{
+   return AroundHave(coor, '$');
+}
+
 // 人机对战
 void PeopleFightMachine()
 {
+    InitArr();
     while (1)
     {
         Chessboard();
@@ -362,7 +677,13 @@ void PeopleFightMachine()
 
         // 电脑下
         // 电脑分析，要下位置
+        coor = ProductPos(coor);
         //
+        if (coor.x == 100)
+        {
+            perror("错误\n");
+            return;
+        }
         
         // 下棋子
         arr[coor.x][coor.y] = '@';
