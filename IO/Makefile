@@ -1,13 +1,13 @@
 .PHONY:all
 
-all:select_server client
+all:server_poll client
 
-select_server:server_select.c
-	gcc -o $@ $^
+server_poll:poll_server.c
+	gcc -o $@ $^ -std=c99
 client:client.c
 	gcc -o $@ $^
 
 .PHONY:clean
 
 clean:
-	rm select_server client
+	rm server_poll client
