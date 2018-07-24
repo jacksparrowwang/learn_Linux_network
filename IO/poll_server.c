@@ -8,6 +8,9 @@
 
 #define SIZE 1024
 
+// 设置就绪好的读事件
+// 每个struct pollfd 结构体中，都有fd 监控的文件描述符 events 输入的监听事件
+// revents 输出的就绪好的实践
 void FdAdd(int sock, struct pollfd* fdlist, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -21,6 +24,7 @@ void FdAdd(int sock, struct pollfd* fdlist, int size)
     }
 }
 
+// 创建socket
 int InitSock(const char *ip, int port)
 {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -52,6 +56,7 @@ int InitSock(const char *ip, int port)
     return sock;
 }
 
+// 初始化pollfd结构体的数组
 void InitPollfd(struct pollfd* fdlist, int size)
 {
     for (int i = 0; i < size; ++i)
@@ -77,8 +82,11 @@ int main(int argc, char* argv[])
         return 2;
     }
 
+    // 构建出fdlist结构体
     struct pollfd fdlist[SIZE];
+    // 初始化
     InitPollfd(fdlist, SIZE);
+    // 添加事件
     FdAdd(list_sock, fdlist, SIZE);
     for (;;)
     {
@@ -94,6 +102,7 @@ int main(int argc, char* argv[])
             printf("timeout ...");
             continue;
         }
+        // 循环的去遍历就绪事件
         for(size_t i = 0; i < SIZE; ++i)
         {
             if (fdlist[i].fd == -1)
@@ -115,6 +124,7 @@ int main(int argc, char* argv[])
                     perror("accept error");
                     continue;
                 }
+                // 添加连接上的文件描述符
                 FdAdd(connec_sock, fdlist, SIZE);
             }
             else
@@ -133,6 +143,7 @@ int main(int argc, char* argv[])
                     fdlist[i].events = 0;
                 }
                 printf("client :%s\n", buf);
+                // 写回客户端
                 write(fdlist[i].fd, buf, strlen(buf));
             }
         }
