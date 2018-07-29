@@ -58,8 +58,11 @@ public:
     // 构造出一个404响应
     int Process404(Context* context);
 
+private:
     // 在c++中static成员函数，只能在声明中添加static，不能在定义用
     static void* ThreadEntry(void* arg);
+    int ParseFirstLine(const std::string& first_line, std::string* method, std::string* url);
+    int ParseUrl(const std::string& url, std::string* url_path, std::string* query_string);
 };
 
 }// end http_server

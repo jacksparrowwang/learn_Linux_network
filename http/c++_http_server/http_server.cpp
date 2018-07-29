@@ -139,7 +139,7 @@ int HttpServer::ReadOneRequest(Context* context)
     // 1.读取首行
     std::string first_line;
     // 这里第二参数为输出型参数
-    ReadLine(context->new_sock, &first_line);
+    FileUtil::ReadLine(context->new_sock, &first_line);
     // 2.解析首行method 和url
     int ret = ParseFirstLine(first_line, &req.method, &req.url);
     if (ret < 0)
@@ -158,7 +158,7 @@ int HttpServer::ReadOneRequest(Context* context)
     std::string header_line;
     while (1)
     {
-        ReadLine(context->new_sock, &header_line);
+        FileUtil::ReadLine(context->new_sock, &header_line);
         // 如果header_line是空行就退出
         // if ()
         // {
@@ -166,6 +166,11 @@ int HttpServer::ReadOneRequest(Context* context)
         // }
         //
         ret = ParseHeader(header_line, &req.header);
+        if (ret < 0)
+        {
+            LOG(ERROR) << "ParseHeader error first_line = " << header_line << "\n";
+            return -1;
+        }
     }
     // 通过迭代器来查找Content-Length字段
     Header::iterator it = req.header.find("Content-Length");
@@ -192,6 +197,33 @@ int HttpServer::ReadOneRequest(Context* context)
         return -1;
     }
     return 0;
+}
+
+// 解析首行
+int HttpServer::ParseFirstLine(const std::string& first_line, std::string* method, std::string* url)
+{
+    std::vector<std::string> tokens;
+    StringUtil::Split(first_line, " ", &tokens);
+    if (tokens.size() != 3)
+    {
+        LOG(ERROR) << "split error! first_line = "<< first_line <<"\n";
+        return -1;
+    }
+    // 检查版本号
+    if (tokens[2].find("HTTP") == std::string::npos)
+    {
+        // 首行信息错误
+        LOG(ERROR) << "version error ParseFirstLin error! first_line = "<< first_line <<"\n";
+        return -1;
+    }
+    *method = tokens[0];
+    *url = tokens[1];
+}
+
+// 解析url为以?作为分割，左边就是url_path, 右边为query_string
+int HttpServer::ParseUrl(const std::string& url, std::string* url_path, std::string* query_string)
+{
+
 }
 
 }// namespace
