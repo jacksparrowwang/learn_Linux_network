@@ -160,6 +160,7 @@ int FatherProcess(int sock, FirstLine* first, Header* header, int father_read, i
     char response[SIZE] = {0};
     sprintf(response, "HTTP/1.1 200 OK\nContent-Length: %lu\n\n", count);
     send(sock, response, strlen(response), 0);
+    // 这里是不能sendfile
     send(sock, buffer, count, 0);
     free(buffer);
 
@@ -237,7 +238,7 @@ int DynamicsPage(int sock, FirstLine* first, Header* header)
    {
        // child
        // 设置环境变量(REQUEST_METHOD QUERY_STRING CONTENT_LENGHT)
-       // 把标准输入输出定向到管道上
+       // 把标准输入输重定向到管道上
        // 子进程进行程序替换
        close(father_read);
        close(father_write);
