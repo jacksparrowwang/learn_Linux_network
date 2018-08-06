@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sstream>
+#include <fstream>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -159,12 +160,12 @@ int HttpServer::ReadOneRequest(Context* context)
     while (1)
     {
         FileUtil::ReadLine(context->new_sock, &header_line);
-        // 如果header_line是空行就退出
-        // if ()
-        // {
-        // break;
-        // }
-        //
+         // 如果header_line是空行就退出
+         if (header_line == "")
+         {
+             break;
+         }
+        
         ret = ParseHeader(header_line, &req.header);
         if (ret < 0)
         {
@@ -223,7 +224,122 @@ int HttpServer::ParseFirstLine(const std::string& first_line, std::string* metho
 // 解析url为以?作为分割，左边就是url_path, 右边为query_string
 int HttpServer::ParseUrl(const std::string& url, std::string* url_path, std::string* query_string)
 {
+    size_t pos = url.find("?");
+    if (pos == std::string::npos)
+    {
+        *url_path = url;
+        *query_string = "";
+        return 0;
+    }
+    // 找到的是下标
+    *url_path = url.substr(0, pos);
+    *query_string = url.substr(pos+1);
+    return 0;
+}
 
+
+int HttpServer::ParseHeader(const std::string& header_line, Header* header)
+{
+    size_t pos = header_line.find(":");
+    if (pos == std::string::npos)
+    {
+        LOG(ERROR) << "ParseHeader error ! has no : header_line =" <<header_line <<"\n";
+        return -1;
+    }
+    if (pos + 2 >= header_line.size())
+    {
+        LOG(ERROR) << "ParseHeader error ! has no value: header_line =" <<header_line <<"\n";
+        return -1;
+    }
+    // 和map很像，unordered_map 是一个哈希表
+    (*header)[header_line.substr(0, pos)] = header_line.substr(pos+2);
+    return 0;
+}
+
+int HttpServer::WriteOneResponse(Context* context)
+{
+    const Response& resp = context->resp;
+    std::stringstream ss;
+    ss << "HTTP/1.1 " << resp.code << " " << resp.desc << "\n";
+    for (auto item : resp.header)
+    {
+        ss << item.first << ":" << item.second << "\n";
+    }
+    ss << "\n";
+    ss << resp.body;
+
+    const std::string& str = ss.str();
+    write(context->new_sock, str.c_str(), str.size());
+    return 0;
+}
+
+int HttpServer::HeadlerRequest(Context*context)
+{
+    const Request& req = context->req;
+    Response* resp = &context->resp;
+    resp->code = 200;
+    resp->desc = "OK";
+
+    if (req.method == "GET" && req.query_string == "")
+    {
+        return context->server->ProcessStaticFile(context);
+    }
+    else if ((req.method == "GET" && req.query_string != ""))|| req.method == "POST")
+    {
+        return context->server->ProcessCGI(context);
+    }
+    else
+    {
+        perror("perror");
+        return -1;
+    }
+    return -1;
+}
+
+static int ReadAll(const std::string& file_path,std::string* output)
+{
+    std::ifstream file(file_path.c_str());
+    if (!file.is_open())
+    {
+        perror("ifstream");
+        return -1;
+    }
+    file.seekg(0, file.end);
+
+    int length = file.tellg();
+    file.seekg(0, file.beg);
+    output->resize(length);
+    file.read((char*)output->c_str(), length);
+    file.close();
+    return 0;
+}
+
+int HttpServer::ProcessStaticFile(Context* context)
+{
+    const Request& req = context->req;
+    Response* resp = &context->resp;
+    std::string file_path;
+    GetFilePath(req.url_path, &file_path);
+    int ret = ReadAll(file_path, &resp->body);
+    if (ret < 0)
+    {
+        perror("Read  error");
+        return -1;
+    }
+    return 0;
+}
+
+void HttpServer::GetFilePath(const std::string& url_path, std::string* file_path)
+{
+    *file_path = "./wwwroot"+url_path;
+    if (FileUtil::IsDir(*file_path))
+    {
+        if (file_path->back() != '/')
+        {
+            file_path->push_back('/');
+        }
+        (*file_path) += "index.html";
+    }
 }
 
 }// namespace

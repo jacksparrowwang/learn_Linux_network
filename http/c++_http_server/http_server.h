@@ -63,6 +63,9 @@ private:
     static void* ThreadEntry(void* arg);
     int ParseFirstLine(const std::string& first_line, std::string* method, std::string* url);
     int ParseUrl(const std::string& url, std::string* url_path, std::string* query_string);
+    int ParseHeader(const std::string& header_line, Header* header);
+    int ProcessStaticFile(Context* context);
+    void GetFilePath(const std::string& url_path, std::string* file);
 };
 
 }// end http_server

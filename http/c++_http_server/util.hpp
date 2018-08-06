@@ -100,6 +100,17 @@ public:
         }
         return 0;
     }
+
+    
+    static bool IsDir(const std::string& file_path)
+    {
+        return boost::filesystem::is_directory(file_path);
+    }
+
+    int ReadN(int fd, size_t len, std::string* output)
+    {
+        // TODO
+    }
 };
 
 
