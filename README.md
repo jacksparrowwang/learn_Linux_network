@@ -12,5 +12,9 @@ study remote git💪
 9) TCP/UDP 编程
 10) TCP 多进程，多线程
 11) http 协议的认识
-12) 网络版对战五子棋??
+12) 网络版对战五子棋小项目
+13) select服务器实现
+14) poll 服务器实现
+15) epoll 服务器 LT 和 ET 模式
+
 
